@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" >
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="js/script.js"></script>
+
+    <script>
+        routing();
+    </script>
+
+
+    <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/fontawesome/css/all.css">
+    <title>Карточки</title>
+</head>
+<body>
+<div class="container-main background-fix" style="background: #61BD4F; ">
+    <div class="header flex-box " style="background: rgba(0,0,0,0.1); padding: 3px; box-sizing: border-box">
+        <div id="show-panel" class="box-small isBold button-header pointer">
+            <i class="fas fa-list-alt"></i> <span class="box-wide no-mobile"> Доски</span>
+        </div>
+        <div class="flex-box to-end">
+            <div  class="tabs flex-box box-small">
+
+            </div>
+            <!--
+            <div class="pointer board-delete  button-header" title="Удалить доску">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            -->
+            <div class="pointer board-add button-header isBold" title="Добавить доску">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="toggle-menu button-header pointer" title="Меню"  >
+                <i class="fas fa-cog"></i>
+            </div>
+            <div class="btn-logout button-header pointer" title="Выйти"  >
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+        </div>
+    </div>
+    <div id="grid-tasks" class="tabs-block flex-box flex-vertical-top" style=" overflow: hidden">
+        <div id="tabs" class="tabs boards-list box-small no-shrink" >
+
+        </div>
+        <div  class="tabs-content background-fix " style="height : calc(100vh - 40px); width: 100%; overflow-x: auto; overflow-y: hidden" >
+            <div>
+                <div class="box-small">
+                    <input  class="board-title isBold column-title" type="text" name="board-name">
+                </div>
+            </div>
+            <div id="board-container">
+
+            </div>
+        </div>
+        <div  class="tabs menu box-small no-shrink"  >
+            <div class="flex-box flex-center" style="position: relative;">
+                <div class="isBold">Меню</div>
+                <div class="ghost pointer toggle-menu" style="position: absolute; right: 10px;">
+                    <i class="fa fa-times"></i>
+                </div>
+            </div>
+            <div style="overflow: auto; max-height: calc(100vh - 100px)">
+                <div id="themes-list" class="flex-box flex-wrap " >
+
+                </div>
+                <div class="new-theme theme-button">
+                    <div class="box-small ">
+                        <div title="Новая тема" class="background-fix isBold  flex-box flex-center-center pointer"    style="width: 120px; font-size: 30px; border-radius: 5px; background-color: #d7dee3; height: 120px;  ">
+                            +
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<template id="tmpl-tab">
+    <div class="tab box-wide" >
+        <input class="board-title"  type="text" style="max-width: 200px;" value="${var}"/>
+    </div>
+</template>
+<template id="tmpl-card">
+    <div class="grid-element-unit task-column-element " data-element-id="${var.id}">
+        <div class="cover-photo">
+            ${cover_photo}
+        </div>
+        <div class="tags-line flex-box flex-wrap">
+            ${tags}
+        </div>
+        <div>
+            <form action="http://cards.bitkit.pro/api/v1.0/cards/update/index.php">
+                <input type="hidden" name="id" value="${var.id}">
+                <div class="card-title">
+                    <div name="title" class="full-width box-small task-title" >
+                        ${var.title}
+                    </div>
+                    <textarea name="title" class="full-width box-small task-title-edit hidden" >${var.title}</textarea>
+                    <div class="card-moderate" >
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card-options flex-box">
+            ${description}
+            ${notification}
+        </div>
+    </div>
+</template>
+<template id="tmpl-card-description">
+    <div class="ghost-double" title="есть описание">
+        <i class="fas fa-align-left"></i>
+    </div>
+</template>
+<template id="tmpl-card-notification">
+    <div class="ghost-double" title="включены уведомления">
+        <i class="fas fa-paper-plane"></i>
+    </div>
+</template>
+<template id="tmpl-theme-list">
+    <div class="box-small">
+        <div class="theme-template background-fix "  data-id="${id}"  data-img="${background_image}" data-background-color="${background_color}"   style="width: 120px; border-radius: 5px; background-color: ${background_color}; height: 120px; background-image: url('${background_image}') ">
+
+        </div>
+    </div>
+</template>
+<template id="tmpl-card-tag">
+    <div class="tag isBold" title="${title}" style="background: ${color}">
+
+    </div>
+</template>
+<template id="tmpl-card-add">
+    <div class="task-new-container">
+        <div class=" task-column-element ">
+            <form onkeydown="if(event.keyCode===13){return false;}" method="POST" action="http://cards.bitkit.pro/api/v1.0/cards/post/index.php" >
+                <div>
+                    <input type="hidden" name="id" value="">
+                    <textarea  name="title" class="full-width box-small"></textarea>
+                </div>
+                <div class="flex-box box-small card-add-panel">
+                    <div class="btn-ajax-card" style="background: limegreen; padding: 5px 10px; color: #FFFFFF">
+                        сохранить
+                    </div>
+                    <div class="to-end card-delete ghost">
+                        <i class="far fa-times"></i>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+<template id="tmpl-column">
+    <div class="box-small ">
+        <div class="grid-column task-column" style="padding: 0 5px; box-sizing: border-box;">
+            <div class="task-column-header box-small">
+                <div class="flex-box flex-between ">
+                    <div class="task-column-title">
+                        <input  title="${column}" class="full-width isBold box-small-wide column-title" value="${column}" type="text" placeholder="Название колонки" >
+                    </div>
+                    <div class="to-end ghost pointer task-column-options flex-box flex-center-center">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="task-column-body box-small-wide tasksSortable " >
+                ${tasks_text}
+            </div>
+            <div class="card-add box-small ghost pointer">
+                Добавить карточку...
+            </div>
+        </div>
+    </div>
+</template>
+<template id="tmpl-column-add">
+    <div class="box-small">
+        <div class="task-column-add">
+            + Добавить колонку
+        </div>
+    </div>
+</template>
+<template id="tmpl-board">
+    <div class="task-board flex-box full-height flex-vertical-top" data-board-name="${board_name}" style="flex-wrap: nowrap;">
+        <div id="grid-columns-${i}" class="grid-columns columnsSortable flex-box flex-vertical-top" style="flex-wrap: nowrap;">
+            ${columns_text}
+        </div>
+        ${add_content}
+    </div>
+</template>
+<template id="tmpl-board-list">
+    <div class="boards-list-element isBold pointer flex-box" data-furl="${furl}"  >
+        <div class="background-fix"  style="width: 40px; height: 40px; border-radius: 3px; background-color: ${background_color}; background-image: url('${background_image}') ">
+
+        </div>
+        <div class="box-wide">
+            ${title}
+        </div>
+    </div>
+</template>
+<template id="tmpl-form">
+    <form  action="http://cards.bitkit.pro/api/v1.0/cards/update/index.php" method="post" class="full-height">
+        <div class="cover-photo">
+            ${cover_photo}
+        </div>
+        <div class="box-wide text_left flex-box flex-box-verical full-height ">
+            <div>
+                <input title="" type="hidden"  name="id" value="${id}"/>
+            </div>
+            <div class="full-width box-vertical" >
+                <div class=" flex-box flex-vertical-top isBold">
+                    <div class="box-small ghost" title="заголовок">
+                        <i class="fas fa-tasks-alt"></i>
+                    </div>
+                    <div class="full-width">
+                        <textarea title="заголовок"  style="overflow: hidden; font-size: 20px;  font-weight: bold;"  name="title" id="form-title">${title}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-box flex-vertical-top box-small full-width form-tags">
+                <div class="ghost">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="form-tags-area">
+                    <div class="isBold box-small-wide ghost">
+                        Метки
+                    </div>
+                    <div class="flex-box box-wide">
+                        <input type="hidden" name="tags" value="0"/>
+                        <div class="tags-selected flex-box flex-wrap">
+                            ${tags}
+                        </div>
+                        <div class="icon-orthogonal pointer tags-pool-toggle">
+                            +
+                        </div>
+                    </div>
+                    <div id="tags-pool" class=" box-vertical flex-wrap hidden">
+
+                    </div>
+                </div>
+            </div>
+            <div class=" flex-box flex-vertical-top  full-width">
+                <div class="box-small ghost">
+                    <i class="fas fa-align-justify"></i>
+                </div>
+                <div class="full-width" >
+                    <div class="isBold box-small-vertical ghost">
+                        Описание
+                    </div>
+                    <div>
+                        <textarea title="Описание карточки" name="description" id="form-description" placeholder="Введите подробное описание....">${description}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class=" flex-box flex-vertical-top  full-width">
+                <div class="box-small ghost">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="full-width flex-box flex-vertical-center" >
+                    <div class="isBold box-small-vertical ghost">
+                        Уведомления
+                    </div>
+                    <div >
+                        <input type="hidden" name="notification" value="0" />
+                        <input style="width: 30px" ${notification} type="checkbox" name="notification" value="1" />
+                    </div>
+                    <div>
+                        <input style="width: 100px" type="number" name="notification_timeout" value="${notification_timeout}" placeholder="Период" /> сек
+                    </div>
+                </div>
+            </div>
+            <div>
+                <input type="file" name="cover_photo" >
+            </div>
+            <div class="to-end card-remove pointer" data-id="${id}">
+                <i class="far fa-trash-alt"></i>
+            </div>
+        </div>
+    </form>
+</template>
+
+<template id="tmpl-form-theme">
+    <div class="theme-form box-wide">
+        <form  action="http://cards.bitkit.pro/api/v1.0/themes/post/index.php"  method="post"  enctype="multipart/form-data">
+            <div>
+                <input type="text" name="title" placeholder="Название" />
+            </div>
+            <div>
+                <input id="theme-file"  type="file" name="background_image" placeholder="Название" />
+            </div>
+            <div>
+                <input type="color" name="background_color" placeholder="Цвет" />
+            </div>
+            <div id="new-theme" class="button1">
+                <button>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</template>
+
+<template id="tmpl-form-tag">
+    <div class="tag-source form-tag flex-box flex-vertical-center isBold" style="background: ${color}">
+        <input  disabled  type="hidden" value="${id}" name="tags[]" />
+        ${title}
+        <span class="box-small-left tag-delete" style="font-size: 12px;">
+              <i class="fal fa-times"></i>
+        </span>
+    </div>
+</template>
+
+<div id="modal-kit" class="flex-box flex-center-center " >
+    <div class="edit-modal" style="position: relative; ">
+        <div class="isBold close-line  flex-box">
+            <div class="modal-close pointer  box-small to-end">
+                <i class="far fa-times"></i>
+            </div>
+        </div>
+        <div id="modal-content" class="full-height " >
+
+        </div>
+    </div>
+</div>
+</body>
+
+
+
+<script src="js/main.js"></script>
+
+
+
+</html>

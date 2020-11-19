@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../css/style.css">
+    <script src="../../js/script.js"></script>
+    <title>Регистрация</title>
+    <script>
+
+    </script>
+</head>
+<body>
+<div class="auth-container flex-box flex-center-center">
+    <div class="auth-form box">
+        <form method="get" action="">
+            <div class="isBold box-small flex-box flex-center form-title">
+                Регистрация в BitCards
+            </div>
+            <div class="box-small full-width">
+                <div>
+                    <input type="text" class="box-small full-width" name="login" placeholder="Логин" />
+                </div>
+            </div>
+            <div class="box-small full-width">
+                <div>
+                    <input type="text" class="box-small full-width" name="email" placeholder="E-mail" />
+                </div>
+            </div>
+            <div class="box-small full-width">
+                <div>
+                    <input type="password" class="box-small full-width" name="password" placeholder="Пароль" />
+                </div>
+            </div>
+            <div class="box-small full-width">
+                <div>
+                    <input type="password" class="box-small full-width" name="password" placeholder="Пароль повторить" />
+                </div>
+            </div>
+            <div  class="box-small ">
+                <button class="btn-login box-small full-width pointer">Создать доски</button>
+            </div>
+            <div  class="box-small flex-box flex-center">
+                <span class="ghost">или <a href="../index.html" class="link-underline"> Войдите </a></span>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    .auth-container{
+        height: 100vh;
+        background: #3b5998;
+    }
+    .auth-form{
+        width: 300px;
+        min-height: 200px;
+        background: #FFFFFF;
+        border-radius: 5px;
+    }
+
+    .auth-form input{
+        background: #EDEFF0;
+        border: 2px solid #DFE1E6;
+        outline: none;
+        transition: background-color .2s ease-in-out 0s,border-color .2s ease-in-out 0s;
+    }
+
+    .auth-form input:focus{
+        border-color: #1c8be4;
+    }
+
+    .auth-form button{
+        background: #6bb93f;
+        color: #FFFFFF;
+        font-weight: bold;
+        border: none;
+        border-radius: 3px;
+        outline: none;
+
+    }
+
+    .form-title{
+        color: #5E6C84;
+    }
+
+
+</style>
+<script>
+    function registrate() {
+        let elem = event.target.closest('.btn-login');
+        if (elem) {
+            disableForm();
+            //alert('dfddf');
+            let response = JSON.parse(sendAjaxRequestGet('http://cards.bitkit.pro/api/v1.0/users/registration/index.php',getFormElements(),false));
+            console.log(response);
+            //запрос на API логина
+            if(response.result === true){
+                setCookie('user_id',response.user_id);
+                setCookie('user_hash',response.user_hash);
+            }                    
+            //console.log(document.cookie);
+            routing();
+            //если result = true то записываем id в куку и редиректим на карточки
+
+            //иначе выводим текст в блок под сообщение
+        }
+    }
+
+    document.onclick = function(){
+        registrate();
+    }
+</script>
+</body>
+</html>

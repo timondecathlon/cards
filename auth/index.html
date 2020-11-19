@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <script src="../js/script.js"></script>
+    <title>Вход</title>
+
+    <script>
+
+        routing();
+
+        //console.log(getCookie('user_id'));
+        //console.log(getCookie('user_hash'));
+
+        function logIn() {
+            let elem = event.target.closest('.btn-login');
+            if (elem) {
+                disableForm();
+                //запрос на API логина
+                let params = [];
+                let login = document.getElementById('field-login').value;
+                let password = document.getElementById('field-password').value;
+                //console.log(login);
+                //console.log(password);   
+                params.push('login='+login);
+                params.push('password='+password);
+                let response = JSON.parse(sendAjaxRequestGet('http://cards.bitkit.pro/api/v1.0/users/login/index.php',params,false));
+                console.log(response);
+                //если result = true то записываем id в куку и редиректим на карточки
+
+                if(response.result === true){
+
+                    //console.log(response.id);
+                    //console.log(response.hash);
+                    //console.log(response);
+                    // Пример использования:
+                    setCookie(response.hash);
+                    // Пример использования:
+                    setCookie('user_hash', response.hash);
+
+                    document.cookie = "user_id="+response.id+';path=/;domain=cards.bitkit.pro';
+                    document.cookie = "user_hash="+response.hash+';path=/;domain=cards.bitkit.pro';
+                    routing();
+                }
+
+                //иначе выводим текст в блок под сообщение
+            }
+            console.log(document.cookie);
+        }
+
+        document.onclick = function(){
+            logIn();
+        }
+    </script>
+</head>
+<body>
+    <div class="auth-container flex-box flex-center-center">
+        <div class="auth-form box">
+            <form method="get" action="">
+                <div class="isBold box-small flex-box flex-center form-title">
+                    Вход в BitCards
+                </div>
+                <div class="box-small full-width">
+                    <div>
+                        <input id="field-login" type="text" class="box-small full-width" name="login" placeholder="Логин или E-mail" />
+                    </div>
+                </div>
+                <div class="box-small full-width">
+                    <div>
+                        <input id="field-password" type="password" class="box-small full-width" name="password" placeholder="Пароль" />
+                    </div>
+                </div>
+                <div  class="box-small ">
+                    <button class="btn-login box-small full-width pointer">Войти</button>
+                </div>
+                <div  class="box-small flex-box flex-center">
+                    <span class="ghost">или <a href="reg/index.html" class="link-underline"> Регистрация </a></span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <style>
+        .auth-container{
+            height: 100vh;
+            background: #6bb93f;
+        }
+        .auth-form{
+            width: 300px;
+            min-height: 200px;
+            background: #FFFFFF;
+            border-radius: 5px;
+        }
+
+        .auth-form input{
+            background: #EDEFF0;
+            border: 2px solid #DFE1E6;
+            outline: none;
+            transition: background-color .2s ease-in-out 0s,border-color .2s ease-in-out 0s;
+        }
+
+        .auth-form input:focus{
+            border-color: #1c8be4;
+        }
+
+        .auth-form button{
+            background: #3b5998;
+            color: #FFFFFF;
+            font-weight: bold;
+            border: none;
+            border-radius: 3px;
+            outline: none;
+
+        }
+
+        .form-title{
+            color: #5E6C84;
+        }
+
+
+    </style>
+
+</body>
+</html>
